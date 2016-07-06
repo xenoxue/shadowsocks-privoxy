@@ -1,29 +1,20 @@
-FROM alpine:latest
-MAINTAINER bluebu <bluebuwang@gmail.com>
+FROM alpine
 
-#------------------------------------------------------------------------------
-# Environment variables:
-#------------------------------------------------------------------------------
+MAINTAINER littleqz <littleqz@gmail.com>
 
-RUN \
-  apk --update --upgrade add \
-      py-pip \
-      # openssh \
-      privoxy \
-  && rm /var/cache/apk/*
+RUN echo 'http://nl.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories \
+    && apk add -U curl libsodium python \
+    && curl -sSL https://bootstrap.pypa.io/get-pip.py | python \
+    && pip install shadowsocks \
+    && apk del curl \
+    && rm -rf /var/cache/apk/*
 
-RUN pip install shadowsocks
+ENV SERVER 0.0.0.0
+ENV SERVER_PORT 998
+ENV LOCAL_PORT 1080
+ENV LOCAL_ADDR 0.0.0.0
+ENV PASSWORD default
+ENV METHOD aes-256-cfb
+ENV TIMEOUT 300
 
-#------------------------------------------------------------------------------
-# Populate root file system:
-#------------------------------------------------------------------------------
-
-ADD rootfs /
-
-#------------------------------------------------------------------------------
-# Expose ports and entrypoint:
-#------------------------------------------------------------------------------
-EXPOSE 8118 7070
-
-# ENTRYPOINT ["/usr/sbin/privoxy", "--no-daemon", "/etc/privoxy/config"]
-ENTRYPOINT ["/entrypoint.sh"]
+EXPOSE $LOCAL_PORT
